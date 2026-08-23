@@ -1,5 +1,7 @@
 # README Demo Skill
 
+**English** | [한국어](README.ko.md)
+
 ![README Demo icon](skills/readme-demo/assets/readme-demo-icon.png)
 
 A Codex skill for designing, recording, reviewing, optimizing, and embedding reproducible README demos for developer projects.
