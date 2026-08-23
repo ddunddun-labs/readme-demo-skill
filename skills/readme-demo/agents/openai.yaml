@@ -1,0 +1,14 @@
+interface:
+  display_name: README Demo
+  short_description: Create reproducible README demos for developer projects
+  default_prompt: Use $readme-demo to design, record, review, and embed a reproducible
+    demo of this project.
+  icon_small: assets/readme-demo-icon.png
+  icon_large: assets/readme-demo-icon.png
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
