@@ -10,6 +10,7 @@
 
 - 웹 애플리케이션은 Playwright 1.59+ Screencast로 녹화
 - CLI와 TUI 화면은 VHS로 녹화
+- Windows 네이티브와 Electron 앱은 UI Automation 기반 조작 지침 제공
 - 검토, 합성, 내보내기는 FFmpeg 활용
 - 녹화 해상도 고정 및 assertion 기반 성공 조건 확인
 - 개인 경로, 이메일, 비밀 값, 무관한 화면 노출 검사
@@ -50,8 +51,11 @@ README GIF나 MP4, 브라우저 사용 과정, 터미널 녹화, 릴리스 데�
 - 웹 데모: Node.js, Playwright 1.59+, Playwright Chromium, FFmpeg
 - 터미널 데모: VHS, ttyd, VHS Chromium, FFmpeg
 - 브라우저·터미널 합성: 두 도구 모음 모두 필요
+- Windows 네이티브/Electron 데모: PowerShell, UI Automation, 시험 프레임으로 검증한 캡처 방식, Windows 또는 WSL의 FFmpeg
 
 선택한 작업 흐름에 맞춰 사전 점검과 실행·렌더링 smoke test를 수행하도록 구성되어 있습니다.
+
+Windows 데스크톱 데모에서는 하나의 캡처 방식을 모든 앱에 적용하기보다 Windows Graphics Capture, `PrintWindow`, 화면 기반 캡처를 비교한 뒤 시험 프레임으로 선택합니다. UIA 패턴 fallback, 모니터별 DPI, 전면 창 확인, Electron 접근성, Windows·WSL 혼합 인코딩 흐름도 함께 다룹니다.
 
 ## 저장소 구조
 
