@@ -55,7 +55,7 @@ README GIF나 MP4, 브라우저 사용 과정, 터미널 녹화, 릴리스 데�
 
 선택한 작업 흐름에 맞춰 사전 점검과 실행·렌더링 smoke test를 수행하도록 구성되어 있습니다.
 
-Windows 데스크톱 데모에서는 하나의 캡처 방식을 모든 앱에 적용하기보다 Windows Graphics Capture, `PrintWindow`, 화면 기반 캡처를 비교한 뒤 시험 프레임으로 선택합니다. UIA 패턴 fallback, 모니터별 DPI, 전면 창 확인, Electron 접근성, Windows·WSL 혼합 인코딩 흐름도 함께 다룹니다.
+Windows 데스크톱 데모에서는 하나의 캡처 방식을 모든 앱에 적용하기보다 Windows Graphics Capture, `PrintWindow`, 화면 기반 캡처를 비교한 뒤 시험 프레임으로 선택합니다. UIA 패턴 fallback, 다중 창 합성, 모니터별 DPI, 전면 창 확인, Electron 접근성, Windows·WSL 혼합 인코딩 흐름도 함께 다룹니다. WinApp CLI를 사용할 수 있다면 프로젝트별 P/Invoke 코드를 작성하기 전에 선택 가능한 어댑터로 시험합니다.
 
 ## 저장소 구조
 
