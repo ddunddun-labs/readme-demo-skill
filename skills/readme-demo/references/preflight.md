@@ -9,7 +9,7 @@ Run preflight after selecting the capture surfaces and before writing the final 
 | Browser only | Playwright package, Playwright Chromium launch, ffmpeg, ffprobe |
 | Terminal only | vhs, ttyd, VHS Chromium render smoke test, ffmpeg, ffprobe |
 | Browser + terminal composite | All browser and terminal checks |
-| Windows native/Electron | Windows host and PowerShell, target process/window, UI Automation tree and control patterns, DPI/monitor state, capture smoke frame, ffmpeg, ffprobe |
+| Windows native/Electron | Windows host and PowerShell, optional WinApp CLI, target process/window, UI Automation tree and control patterns, DPI/monitor state, capture smoke frame, chosen ffmpeg/ffprobe environment |
 | Windows capture + WSL encoding | All Windows native checks, PowerShell invocation from WSL, path conversion, Linux ffmpeg and ffprobe |
 
 ## Binary checks
@@ -74,10 +74,21 @@ Run these checks from Windows PowerShell, or call PowerShell from WSL when using
 
 ```powershell
 $PSVersionTable.PSVersion
+Get-Command winapp -ErrorAction SilentlyContinue
 Get-Command ffmpeg -ErrorAction SilentlyContinue
 Get-Command ffprobe -ErrorAction SilentlyContinue
 Get-Process | Select-Object ProcessName, Id, MainWindowTitle
 ```
+
+WinApp CLI is optional. When available, consider using its UIA, screenshot, and recording commands before writing new P/Invoke helpers:
+
+```powershell
+winapp ui list-windows -a <process-or-title>
+winapp ui inspect -w <HWND> --json
+winapp ui screenshot -w <HWND>
+```
+
+If it is unavailable or does not support the scenario, continue with the PowerShell/UIA and capture-adapter checks below rather than treating the missing CLI as a blocker.
 
 Before writing the full scenario:
 
@@ -87,7 +98,7 @@ Before writing the full scenario:
 4. Bring the target window forward, then verify that it is the foreground window before any coordinate-based input.
 5. Exercise one representative UIA action. If a coordinate fallback may be needed, test one clickable point before recording.
 6. Capture and inspect one disposable frame with the proposed capture method. Look for a black frame, stale content, clipping, transparency loss, unintended borders, and occlusion by another window.
-7. Confirm ffmpeg can decode that frame or the short source clip and write a disposable MP4.
+7. Confirm the selected ffmpeg environment can decode that frame or short source clip and write a disposable MP4.
 
 For an Electron project you control, also confirm that its accessibility tree is available. If needed, enable accessibility support in a demo/test mode after Electron is ready; avoid making it a production default solely for recording.
 
@@ -101,7 +112,12 @@ source_path="$(wslpath 'C:\\Temp\\readme-demo\\source.mp4')"
 ffprobe -v error "$source_path"
 ```
 
-Prefer a file boundary over streaming high-rate raw frames between Windows and WSL. Verify quoting with a disposable path before the real recording.
+Choose the encoder side explicitly:
+
+- **Windows ffmpeg:** check it with `Get-Command ffmpeg` and `Get-Command ffprobe` in PowerShell.
+- **WSL ffmpeg:** check it with `command -v ffmpeg` and `command -v ffprobe` in WSL, then probe the converted Windows path.
+
+Only one side needs to perform final encoding unless the scenario intentionally uses both. Prefer a file boundary over streaming high-rate raw frames between Windows and WSL. Verify quoting with a disposable path before the real recording.
 
 ## Fail early
 
