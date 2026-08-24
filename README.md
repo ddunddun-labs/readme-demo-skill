@@ -10,6 +10,7 @@ It treats a demo as a presentation-oriented end-to-end test rather than a manual
 
 - Playwright 1.59+ Screencast for web applications
 - VHS for CLI and TUI surfaces
+- Windows UI Automation guidance for native and Electron applications
 - FFmpeg for review, composition, and export
 - Fixed capture dimensions and assertion-based success criteria
 - Privacy checks for paths, email addresses, secrets, and unrelated content
@@ -50,8 +51,11 @@ Dependencies are selected by capture surface rather than installed all at once:
 - Web demos: Node.js, Playwright 1.59+, Playwright Chromium, and FFmpeg
 - Terminal demos: VHS, ttyd, VHS Chromium, and FFmpeg
 - Browser-and-terminal composites: both toolchains
+- Windows native/Electron demos: PowerShell, UI Automation, a capture method validated with a smoke frame, and FFmpeg on Windows or WSL
 
 The skill includes preflight checks and launch/render smoke tests for the selected workflow.
+
+For Windows desktop demos, the skill compares Windows Graphics Capture, `PrintWindow`, and visible-screen capture rather than assuming one method works for every app. It also covers UIA pattern fallbacks, per-monitor DPI, foreground-window checks, Electron accessibility, and Windows/WSL encoding workflows.
 
 ## Repository layout
 
