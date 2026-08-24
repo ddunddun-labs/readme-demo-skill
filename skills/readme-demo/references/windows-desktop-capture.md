@@ -6,10 +6,27 @@ Use this guide when an approved storyboard records a Windows native application 
 
 Treat the workflow as two adapters:
 
-- **Control:** Windows UI Automation (UIA), with coordinate input only as a measured fallback.
+- **Control:** Windows UI Automation (UIA), optionally through WinApp CLI, with coordinate input only as a measured fallback.
 - **Capture:** Windows Graphics Capture, `PrintWindow`, or visible-screen capture, selected after a smoke frame.
 
 Keep launch, fixture setup, window placement, and accessibility setup outside the recorded interval when practical.
+
+## Optional WinApp CLI adapter
+
+When `winapp` is available, consider it before creating project-specific P/Invoke scripts. Its `ui` commands expose UIA inspection and actions, HWND targeting, screenshots, MP4 recording, JSON results, and bounded state waits:
+
+```powershell
+winapp ui list-windows -a Companion
+winapp ui inspect -w <HWND> --json
+winapp ui invoke <selector> -w <HWND>
+winapp ui set-value <selector> "owner/repository" -w <HWND>
+winapp ui wait-for <selector> -w <HWND> --value "Done" --timeout 5000
+winapp ui record -w <HWND> --duration-sec 10 --fps 15 --output demo.mp4
+```
+
+Prefer its pattern-based verbs for non-visual setup and assertions. Its pointer and keyboard injection verbs still need an unlocked interactive desktop and the intended foreground window. Treat a nonzero exit or structured JSON error as a failed step, and confirm visible state after an injected action.
+
+WinApp CLI is a convenience adapter, not a requirement. Keep the UIA and capture selection guidance below as the fallback and as the basis for diagnosing tool-specific failures.
 
 ## UI Automation strategy
 
@@ -54,15 +71,39 @@ if ($element.TryGetCurrentPattern(
 
 If the preferred pattern is unavailable, reacquire the element, obtain its current bounding rectangle or clickable point, verify that the point lies inside the target window, and only then use pointer input. Re-query geometry immediately before clicking because layout, DPI, and monitor placement may have changed.
 
+## Verify postconditions
+
+After each meaningful action, wait for a visible or accessible state rather than assuming the call succeeded. Prefer a UIA event when the provider raises a reliable one, with a bounded property/element poll as a practical fallback because some providers omit change events.
+
+```powershell
+winapp ui wait-for StatusText -w <HWND> --property Name --value "Ready" --timeout 5000
+```
+
+For a custom PowerShell adapter, poll a specific property or element at a short interval until a fixed deadline. Report the expected state and last observed state on timeout. Avoid an unbounded loop or a long presentation sleep in place of verification.
+
 ## Capture method selection
 
 | Method | Consider it when | Verify carefully |
 | --- | --- | --- |
 | Windows Graphics Capture (WGC) | Smooth continuous window capture, GPU-rendered or Electron content, or capture that should be less dependent on visible screen pixels | OS support, consent/picker or programmatic adapter, capture border behavior, window resizing, D3D/WinRT lifetime |
-| `PrintWindow` | A conventional Win32-style window renders correctly into an off-screen device context | Black/stale frames, missing GPU surfaces, transparency and child-window rendering |
+| `PrintWindow` | A conventional Win32-style window renders correctly into an off-screen device context | Hangs, black/stale frames, missing GPU surfaces, transparency and child-window rendering |
 | `CopyFromScreen` / BitBlt-style visible capture | A simple adapter is useful and the target can remain fully visible and unobstructed | Occlusion, notifications, cursor, multi-monitor origins, DPI conversion, unrelated content |
 
-WGC is often the best first candidate for continuous native or Electron recording, but it adds WinRT and graphics setup. `PrintWindow` can be convenient when the target supports it. Visible-screen capture is a reasonable fallback when foreground and privacy conditions can be controlled. Always decide from an inspected smoke frame rather than the API name alone.
+WGC is often the best first candidate for continuous native or Electron recording, but it adds WinRT and graphics setup. `PrintWindow` can be convenient when the target supports it; invoke it behind a bounded timeout so an unresponsive target does not stall the workflow. Discard black, stale, or incomplete output and try WGC or visible-screen capture instead. Visible-screen capture is a reasonable fallback when foreground and privacy conditions can be controlled. Decide from an inspected smoke frame rather than the API name alone.
+
+## Multiple application windows
+
+When the storyboard shows two separate applications, first consider capturing each window independently and composing the clips on a fixed canvas. This reduces sensitivity to which HWND is foreground and makes each source easier to inspect for privacy and rendering failures.
+
+For independent capture:
+
+- Fix each source window's capture dimensions.
+- Define the final canvas, placement, gap, and background explicitly.
+- Synchronize the clips to visible actions or markers.
+- Hold or trim each source deliberately when one clip is shorter.
+- Inspect both panes at the beginning, transition points, and final state.
+
+Use a shared screen capture when the spatial handoff between applications is itself part of the demonstration. In that case, fix both window rectangles and their Z-order, verify the intended foreground HWND before each injected action, and inspect a smoke frame for partial occlusion of either target. A foreground check covers only one window; it does not prove that the second window is unobstructed.
 
 ## DPI and multiple monitors
 
@@ -99,6 +140,14 @@ app.whenReady().then(() => {
 
 Confirm that the expected accessible names, roles, and patterns appear in UIA. Accessibility tree rendering can affect performance, so avoid enabling it globally in production solely for demo automation. If the Electron UI already has stable end-to-end hooks, consider using them for state setup while keeping the recorded interaction truthful.
 
+For a third-party Electron app that cannot be modified, Chromium's `--force-renderer-accessibility=complete` launch switch may expose a fuller tree:
+
+```powershell
+& "C:\\Path\\To\\App.exe" --force-renderer-accessibility=complete
+```
+
+Treat this as a compatibility experiment rather than an assumed Electron contract. Fully exit existing app and helper processes first, launch with the switch, and compare the UIA tree before relying on it. Single-instance launchers may forward or ignore arguments, and app or Chromium updates may change behavior; record the tested app version and re-check after upgrades.
+
 ## WSL + Windows mixed workflow
 
 When the agent runs in WSL:
@@ -110,15 +159,15 @@ When the agent runs in WSL:
 
 Prefer transferring a source clip or frame sequence after capture instead of piping raw frames across the WSL boundary. Keep both Windows and WSL commands in the reproducible scenario and quote converted paths.
 
-## Recording checklist
+## Windows-specific handoff
 
-- Confirm the storyboard and final visible success state.
-- Close or hide notifications, unrelated windows, personal paths, and account details.
-- Place the app on the intended monitor and keep the DPI model unchanged.
-- Pass one UIA action and one capture-frame smoke test.
-- Verify foreground ownership before any coordinate fallback.
-- Start capture after setup; hold the verified final state for 1–2 seconds.
-- Inspect representative frames before encoding.
-- Keep the original MP4 or source clip until the GIF passes review.
+Follow the shared review and export workflow in `references/review-and-export.md`. In addition, report the target HWNDs, monitor/DPI assumptions, UIA or input fallback used, capture mode selected by the smoke test, encoder side (Windows or WSL), and any third-party Electron launch flag.
 
 When a control or renderer cannot be automated reliably, describe the unsupported layer and propose a smaller truthful scenario rather than masking the failure with editing.
+
+## References
+
+- WinApp CLI UI Automation: https://learn.microsoft.com/en-us/windows/apps/dev-tools/winapp-cli/ui-automation
+- Microsoft UI Automation events: https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-eventsforclients
+- Electron accessibility: https://www.electronjs.org/docs/latest/tutorial/accessibility
+- Chromium accessibility overview: https://chromium.googlesource.com/chromium/src/+/main/docs/accessibility/overview.md
