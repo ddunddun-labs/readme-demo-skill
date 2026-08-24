@@ -55,7 +55,7 @@ Dependencies are selected by capture surface rather than installed all at once:
 
 The skill includes preflight checks and launch/render smoke tests for the selected workflow.
 
-For Windows desktop demos, the skill compares Windows Graphics Capture, `PrintWindow`, and visible-screen capture rather than assuming one method works for every app. It also covers UIA pattern fallbacks, per-monitor DPI, foreground-window checks, Electron accessibility, and Windows/WSL encoding workflows.
+For Windows desktop demos, the skill compares Windows Graphics Capture, `PrintWindow`, and visible-screen capture rather than assuming one method works for every app. It also covers UIA pattern fallbacks, multi-window composition, per-monitor DPI, foreground-window checks, Electron accessibility, and Windows/WSL encoding workflows. When available, WinApp CLI can serve as an optional adapter before project-specific P/Invoke code.
 
 ## Repository layout
 
