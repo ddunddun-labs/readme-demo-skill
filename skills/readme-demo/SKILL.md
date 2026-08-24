@@ -1,6 +1,6 @@
 ---
 name: readme-demo
-description: Design, record, review, optimize, and embed reproducible README demos for developer projects. Use when asked to create or update a project demo, README GIF or MP4, release demo, browser walkthrough, CLI/TUI recording, or visual proof of a feature. Prefer Playwright Screencast for web apps and VHS for terminal surfaces.
+description: Design, record, review, optimize, and embed reproducible README demos for developer projects. Use when asked to create or update a project demo, README GIF or MP4, release demo, browser walkthrough, CLI/TUI recording, Windows native or Electron walkthrough, or visual proof of a feature. Prefer Playwright Screencast for web apps and VHS for terminal surfaces.
 ---
 
 # README Demo
@@ -21,7 +21,7 @@ Create a short, reproducible demonstration that proves the project's core value.
 
 Inspect the README, package manifests, entry points, existing end-to-end tests, fixtures, and relevant UI code. Determine the value proposition, surface, launch command, URL, test data, authentication, success condition, and cleanup plan.
 
-Do not pretend a native desktop app is supported by Playwright. Explain the missing automation/capture adapter when applicable.
+Do not pretend a native desktop app is supported by Playwright. For Windows native or Electron apps, use the Windows-specific adapter guidance when the environment permits it; otherwise explain the missing automation or capture layer.
 
 ### 2. Propose the storyboard
 
@@ -35,7 +35,8 @@ Prefer 8–15 seconds for a README hero and one feature per demo. Obtain approva
 - Web app: read `references/playwright-screencast.md`. Prefer Playwright 1.59+ `page.screencast` with precise start/stop. Fall back to context `recordVideo` only when the installed version lacks Screencast.
 - CLI/TUI/library example: read `references/terminal-capture.md` and use a committed VHS `.tape` file when practical.
 - CLI/agent visibly driving a web app: only when the approved storyboard intentionally combines browser and terminal, read `references/browser-terminal-composite.md`. This is a conditional pattern, not the default web-demo workflow.
-- Native desktop: stop and identify an appropriate platform automation/capture tool. Do not silently substitute whole-screen recording.
+- Windows native or Electron app: read `references/windows-desktop-capture.md`. Prefer UI Automation for control, test the control patterns actually exposed by the app, and select a window-capture method only after a smoke frame succeeds.
+- Other native desktop platforms: identify an appropriate platform automation/capture adapter. If none is available, explain the limitation rather than silently substituting whole-screen recording.
 
 Reuse existing tests, fixtures, page objects, and stable role/test-id locators. Keep setup outside the recorded interval.
 
